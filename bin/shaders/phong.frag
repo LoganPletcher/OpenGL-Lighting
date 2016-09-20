@@ -6,26 +6,42 @@ in vec4 vNormal;
 
 out vec4 FragColor;
 
+uniform vec3 lightDirection;
+uniform vec3 cameraPosition;
+uniform float specularPower;
 
-uniform vec4 Ka = vec4(1,0,0,1);
-uniform vec4 Kd = vec4(1,0,0,1);
-uniform vec4 lightDirection;
-uniform vec4 Ia = vec4(.25f,.25f,.25f,1);
-uniform vec4 Id = vec4(1,1,1,1);
+uniform vec3 Ka;
+uniform vec3 Kd;
+uniform vec3 Ks;
+uniform vec3 Ia;
+uniform vec3 Id;
+uniform vec3 Is;
 
 void main()
 {
-	vec4 red = vec4(250,0,0,1);
-	vec4 blue = vec4(0,0,250,1);
-	float a = dot(vNormal,vec4(0,1.f,0,1.f));
-	vec4 hemisphere = .5f * mix(red, blue, a) + .5f;
-	//float d = max(0,
-	//dot( normalize(vNormal.xyz),
-	//vec3(0,1,0) ) );
-	vec4 grey = vec4(.25f,.25f,.25f,1.f);
-	//vec4 NormNormal = normalize(vNormal);
-	float NdL = dot(vNormal,-lightDirection);
-	vec4 Diffuse = Id * Kd * NdL;
-	vec4 Ambient = (Ia * .01f) * (Ka) * hemisphere;
-	FragColor = vec4(Ambient + Diffuse);
+	vec3 Lm = normalize(lightDirection);
+	vec3 N = normalize(vNormal.xyz);
+
+	vec3 grey = vec3(.25f,.25f,.25f);
+
+	vec3 red = vec3(255,0,0);
+	vec3 ylw = vec3(255,250,0);
+	vec3 grn = vec3(0,255,0);
+	vec3 cyn = vec3(0,255,255);
+	vec3 blu = vec3(0,0,255);
+	vec3 vlt = vec3(255,0,255);
+
+	vec3 R = (2 * dot(Lm, N) * N - Lm);
+	vec3 E = normalize(cameraPosition - vPosition.xyz);
+
+	float specTerm = pow(max(0,dot(R, E)), specularPower);
+
+	float a = dot(N,vec3(0,1.f,0));
+	vec3 hemisphere = .5f * mix(blu, blu, a) + .5f;
+	
+	vec3 Ambient = (Ia * .01f) * (Ka) * hemisphere;
+	vec3 Diffuse = Kd * dot(N,Lm) * Id * .5f;
+	vec3 Specular = Ks * (Is) * specTerm;
+	
+	FragColor = vec4(Ambient + Diffuse + Specular, 1.f);
 }
